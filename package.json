@@ -1,0 +1,21 @@
+{
+  "name": "wallpaper-studio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Minimal title-card wallpaper generator (NieR-style warm-dark aesthetic).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^0.383.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.3.1"
+  }
+}
