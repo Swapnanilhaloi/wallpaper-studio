@@ -1019,8 +1019,9 @@ const css = `
 .wp-root *{box-sizing:border-box;}
 .wp-shell{display:flex; height:100%;}
 @media (max-width:880px){
+  .wp-root{height:auto; min-height:100dvh; overflow:visible;}
   .wp-shell{flex-direction:column; height:auto; overflow:visible;}
-  .wp-stage{order:-1;}
+  .wp-stage{order:-1; overflow:visible;}
 }
 
 /* PANEL */
