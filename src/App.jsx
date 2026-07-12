@@ -51,6 +51,36 @@ const KANJI_LIST = [
   { k: "平和", s: "heiwa · peace" },
   { k: "山", s: "yama · mountain" },
   { k: "海", s: "umi · sea" },
+  { k: "風", s: "kaze · wind" },
+  { k: "花", s: "hana · flower" },
+  { k: "水", s: "mizu · water" },
+  { k: "炎", s: "honoo · flame" },
+  { k: "氷", s: "kōri · ice" },
+  { k: "竹", s: "take · bamboo" },
+  { k: "森", s: "mori · forest" },
+  { k: "川", s: "kawa · river" },
+  { k: "空虚", s: "kūkyo · emptiness of heart" },
+  { k: "無常", s: "mujō · impermanence" },
+  { k: "静謐", s: "seihitsu · tranquility" },
+  { k: "孤高", s: "kokō · solitary dignity" },
+  { k: "残響", s: "zankyō · lingering echo" },
+  { k: "終焉", s: "shūen · the end" },
+  { k: "始まり", s: "hajimari · beginning" },
+  { k: "願い", s: "negai · a wish" },
+  { k: "旅", s: "tabi · journey" },
+  { k: "道", s: "michi · the way" },
+  { k: "心", s: "kokoro · heart" },
+  { k: "美", s: "bi · beauty" },
+  { k: "真実", s: "shinjitsu · truth" },
+  { k: "幻", s: "maboroshi · illusion" },
+  { k: "宿命", s: "shukumei · destiny" },
+  { k: "孤影", s: "koei · lone shadow" },
+  { k: "無限", s: "mugen · infinity" },
+  { k: "静止", s: "seishi · stillness of motion" },
+  { k: "余韻", s: "yoin · lingering resonance" },
+  { k: "薄明", s: "hakumei · twilight" },
+  { k: "朝露", s: "asatsuyu · morning dew" },
+  { k: "秋風", s: "akikaze · autumn wind" },
 ];
 
 const BG_PRESETS = [
@@ -59,6 +89,13 @@ const BG_PRESETS = [
   { name: "Pure Black", v: "#000000" },
   { name: "Deep Navy", v: "#0b1018" },
   { name: "Bone", v: "#e8e4da" },
+  { name: "Espresso", v: "#241a12" },
+  { name: "Forest", v: "#101c14" },
+  { name: "Wine", v: "#1f0f14" },
+  { name: "Slate", v: "#1b2027" },
+  { name: "Plum", v: "#1a1420" },
+  { name: "Rust", v: "#2a160e" },
+  { name: "Ivory", v: "#f2ede1" },
 ];
 
 const TXT_PRESETS = [
@@ -67,6 +104,25 @@ const TXT_PRESETS = [
   { name: "Bronze", v: "#c2a878" },
   { name: "Cool Grey", v: "#b8bcc4" },
   { name: "Ink", v: "#1a1a1a" },
+];
+
+const GRADIENT_PRESETS = [
+  { name: "Sunset Ember", bg: "#2a160e", bg2: "#4a2418", angle: 135 },
+  { name: "Ocean Depth", bg: "#0b1018", bg2: "#132234", angle: 160 },
+  { name: "Amber Fade", bg: "#1d1a15", bg2: "#3a2c1a", angle: 120 },
+  { name: "Midnight Plum", bg: "#141018", bg2: "#241a2c", angle: 145 },
+  { name: "Forest Mist", bg: "#0e1610", bg2: "#1c2c1e", angle: 150 },
+  { name: "Rose Quartz", bg: "#1f0f14", bg2: "#3a1a22", angle: 130 },
+  { name: "Steel", bg: "#14161a", bg2: "#242830", angle: 165 },
+  { name: "Bone Haze", bg: "#e8e4da", bg2: "#cfc7b6", angle: 135 },
+];
+
+const STYLE_PRESETS = [
+  { name: "Minimal Thin", weight: 100, mainTrack: 0.55, titlePct: 7, fontFamily: "sans" },
+  { name: "Editorial Serif", weight: 300, mainTrack: 0.25, titlePct: 8, fontFamily: "serif" },
+  { name: "Bold Statement", weight: 700, mainTrack: 0.1, titlePct: 10, fontFamily: "sans" },
+  { name: "Wide Elegant", weight: 200, mainTrack: 1.0, titlePct: 6, fontFamily: "sans" },
+  { name: "Classic Mincho", weight: 400, mainTrack: 0.4, titlePct: 7.5, fontFamily: "serif" },
 ];
 
 const WEIGHTS = [
@@ -618,6 +674,16 @@ export default function WallpaperStudio() {
             </Field>
             <Field label={s.bgType === "solid" ? "Background" : "Color 1"}
               right={<Swatch v={s.bg} onPick={set("bg")} />}>
+              <div className="wp-select-wrap">
+                <select className="wp-select"
+                  value={BG_PRESETS.some((p) => p.v === s.bg) ? s.bg : ""}
+                  onChange={(e) => e.target.value && set("bg")(e.target.value)}>
+                  <option value="" disabled>Choose a preset…</option>
+                  {BG_PRESETS.map((p) => (
+                    <option key={p.v} value={p.v}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="wp-presets">
                 {BG_PRESETS.map((p) => (
                   <button key={p.v} title={p.name}
@@ -629,12 +695,42 @@ export default function WallpaperStudio() {
             {s.bgType !== "solid" && (
               <Field label="Color 2" right={<Swatch v={s.bg2} onPick={set("bg2")} />} />
             )}
+            {s.bgType !== "solid" && (
+              <Field label="Gradient preset">
+                <div className="wp-select-wrap">
+                  <select className="wp-select" value=""
+                    onChange={(e) => {
+                      const p = GRADIENT_PRESETS[e.target.value];
+                      if (p) setS((prev) => ({ ...prev, bg: p.bg, bg2: p.bg2, gradAngle: p.angle }));
+                    }}>
+                    <option value="" disabled>Choose a gradient…</option>
+                    {GRADIENT_PRESETS.map((p, i) => (
+                      <option key={p.name} value={i}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </Field>
+            )}
             {s.bgType === "linear" && (
               <Slider label="Angle" v={s.gradAngle} min={0} max={360} step={1}
                 suffix="°" onChange={set("gradAngle")} />
             )}
 
             <Field label="Text color" right={<Swatch v={s.txt} onPick={(v) => setS((prev) => ({ ...prev, txt: v, subTxt: v }))} />}>
+              <div className="wp-select-wrap">
+                <select className="wp-select"
+                  value={TXT_PRESETS.some((p) => p.v === s.txt) ? s.txt : ""}
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    const v = e.target.value;
+                    setS((prev) => ({ ...prev, txt: v, subTxt: v }));
+                  }}>
+                  <option value="" disabled>Choose a preset…</option>
+                  {TXT_PRESETS.map((p) => (
+                    <option key={p.v} value={p.v}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="wp-presets">
                 {TXT_PRESETS.map((preset) => (
                   <button key={preset.v} title={preset.name}
@@ -656,6 +752,23 @@ export default function WallpaperStudio() {
 
           {/* TYPE */}
           <Section label="Type">
+            <Field label="Style preset">
+              <div className="wp-select-wrap">
+                <select className="wp-select" value=""
+                  onChange={(e) => {
+                    const p = STYLE_PRESETS[e.target.value];
+                    if (p) setS((prev) => ({
+                      ...prev, weight: p.weight, mainTrack: p.mainTrack,
+                      titlePct: p.titlePct, fontFamily: p.fontFamily,
+                    }));
+                  }}>
+                  <option value="" disabled>Choose a style…</option>
+                  {STYLE_PRESETS.map((p, i) => (
+                    <option key={p.name} value={i}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            </Field>
             <Field label="Weight">
               <div className="wp-seg">
                 {WEIGHTS.map((w) => (
@@ -819,11 +932,38 @@ function Field({ label, right, children }) {
 
 function Slider({ label, v, min, max, step, suffix, onChange }) {
   const display = step < 0.1 ? Number(v).toFixed(2) : v;
+  const [text, setText] = useState(String(display));
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!editing) setText(String(display));
+  }, [display, editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const n = parseFloat(text);
+    if (Number.isNaN(n)) { setText(String(display)); return; }
+    const clamped = Math.min(max, Math.max(min, n));
+    onChange(clamped);
+  };
+
   return (
     <div className="wp-slider">
       <div className="wp-field-top">
         <span className="wp-field-label">{label}</span>
-        <span className="wp-val">{display}{suffix || ""}</span>
+        <span className="wp-val-wrap">
+          <input
+            className="wp-val-input"
+            type="number"
+            min={min} max={max} step={step}
+            value={text}
+            onFocus={() => setEditing(true)}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
+          />
+          {suffix && <span className="wp-val-suffix">{suffix}</span>}
+        </span>
       </div>
       <input type="range" min={min} max={max} step={step} value={v}
         onChange={(e) => onChange(parseFloat(e.target.value))} />
@@ -881,6 +1021,19 @@ const css = `
 .wp-field-top{display:flex; align-items:center; justify-content:space-between; min-height:18px;}
 .wp-field-label{font-size:12px; color:var(--dim); font-weight:300; letter-spacing:.02em;}
 .wp-val{font-size:11px; color:var(--accent); font-weight:300; font-variant-numeric:tabular-nums;}
+.wp-val-wrap{display:inline-flex; align-items:center; gap:2px;}
+.wp-val-input{
+  width:44px; background:none; border:1px solid transparent; border-radius:4px;
+  color:var(--accent); font-family:inherit; font-size:11px; font-weight:300;
+  font-variant-numeric:tabular-nums; text-align:right; padding:2px 4px;
+  outline:none; transition:border-color .15s, background .15s;
+  appearance:textfield; -moz-appearance:textfield;
+}
+.wp-val-input::-webkit-outer-spin-button,
+.wp-val-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.wp-val-input:hover{border-color:var(--line);}
+.wp-val-input:focus{border-color:var(--accent); background:var(--panel2);}
+.wp-val-suffix{font-size:11px; color:var(--accent); font-weight:300;}
 
 .wp-input{
   width:100%; background:var(--panel2); border:1px solid var(--line);
@@ -902,18 +1055,48 @@ const css = `
 .wp-seg-b:hover{color:var(--txt); border-color:#3a352b;}
 .wp-seg-b.on{background:var(--accent); color:#1a160f; border-color:var(--accent); font-weight:400;}
 
-.wp-presets{display:flex; gap:8px;}
-.wp-chip{
-  width:30px; height:30px; border-radius:6px; cursor:pointer;
-  border:1px solid rgba(255,255,255,.08); transition:transform .12s, box-shadow .12s;
+.wp-select-wrap{position:relative; width:100%; margin-bottom:8px;}
+.wp-select{
+  width:100%; appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  background:var(--panel2); border:1px solid var(--line); color:var(--txt);
+  padding:9px 30px 9px 12px; border-radius:7px; font-family:inherit;
+  font-size:12.5px; font-weight:300; letter-spacing:.02em; cursor:pointer;
+  outline:none; transition:border-color .15s; box-sizing:border-box;
 }
-.wp-chip:hover{transform:translateY(-2px);}
-.wp-chip.on{box-shadow:0 0 0 2px var(--bg), 0 0 0 3px var(--accent);}
+.wp-select:hover{border-color:#3a352b;}
+.wp-select:focus{border-color:var(--accent);}
+.wp-select option{background:var(--panel2); color:var(--txt);}
+.wp-select-wrap::after{
+  content:"⌄"; position:absolute; right:12px; top:50%; transform:translateY(-58%);
+  color:var(--dim); font-size:13px; pointer-events:none;
+}
+
+.wp-presets{display:flex; gap:10px; flex-wrap:wrap;}
+.wp-chip{
+  width:28px; height:28px; border-radius:50%; cursor:pointer;
+  border:1px solid rgba(255,255,255,.14); position:relative;
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:transform .16s cubic-bezier(.4,0,.2,1), box-shadow .16s ease;
+  box-shadow:0 1px 2px rgba(0,0,0,.35);
+}
+.wp-chip:hover{transform:scale(1.14); box-shadow:0 2px 6px rgba(0,0,0,.4);}
+.wp-chip:active{transform:scale(1.02);}
+.wp-chip.on{
+  transform:scale(1.08);
+  box-shadow:0 0 0 2px var(--panel2), 0 0 0 4px var(--accent), 0 2px 6px rgba(0,0,0,.4);
+}
+.wp-chip.on::after{
+  content:"✓"; font-size:11px; font-weight:700; color:#fff; line-height:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.75), 0 0 3px rgba(0,0,0,.5);
+}
 
 .wp-swatch{
-  width:24px; height:18px; border-radius:4px; cursor:pointer; display:inline-block;
-  border:1px solid rgba(255,255,255,.14); overflow:hidden; position:relative;
+  width:26px; height:26px; border-radius:50%; cursor:pointer; display:inline-block;
+  border:1px solid rgba(255,255,255,.16); overflow:hidden; position:relative;
+  box-shadow:0 1px 2px rgba(0,0,0,.35);
+  transition:transform .16s cubic-bezier(.4,0,.2,1), box-shadow .16s ease;
 }
+.wp-swatch:hover{transform:scale(1.12); box-shadow:0 0 0 3px var(--panel2), 0 0 0 4px rgba(194,168,120,.5);}
 .wp-swatch input{position:absolute; inset:-4px; opacity:0; cursor:pointer;}
 
 .wp-toggle{
