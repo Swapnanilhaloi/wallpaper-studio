@@ -1018,7 +1018,10 @@ const css = `
 }
 .wp-root *{box-sizing:border-box;}
 .wp-shell{display:flex; height:100%;}
-@media (max-width:880px){ .wp-shell{flex-direction:column; height:auto; overflow:visible;} }
+@media (max-width:880px){
+  .wp-shell{flex-direction:column; height:auto; overflow:visible;}
+  .wp-stage{order:-1;}
+}
 
 /* PANEL */
 .wp-panel{
@@ -1031,7 +1034,7 @@ const css = `
 .wp-panel::-webkit-scrollbar-track{ background:transparent; }
 .wp-panel::-webkit-scrollbar-thumb{ background:var(--faint); border-radius:4px; }
 .wp-panel::-webkit-scrollbar-thumb:hover{ background:var(--dim); }
-@media (max-width:880px){ .wp-panel{width:100%; height:auto; border-right:none; border-bottom:1px solid var(--line);} }
+@media (max-width:880px){ .wp-panel{width:100%; height:auto; border-right:none; border-top:1px solid var(--line); border-bottom:none;} }
 
 .wp-head{margin-bottom:22px; position:relative;}
 .wp-theme-toggle{
@@ -1218,4 +1221,37 @@ const css = `
   font-size:12px; letter-spacing:.3em; color:var(--faint); background:var(--bg);}
 .wp-meta{font-size:11px; letter-spacing:.18em; color:var(--faint); display:flex; gap:10px; font-weight:300; text-transform:uppercase;}
 .wp-dot{color:var(--line);}
+
+/* PHONE */
+@media (max-width:600px){
+  .wp-root{ padding-bottom:env(safe-area-inset-bottom); }
+  .wp-stage{ padding:16px 14px 22px; }
+  .wp-stage-inner{ gap:12px; }
+  .wp-panel{ padding:20px 16px calc(24px + env(safe-area-inset-bottom)); }
+  .wp-head{ margin-bottom:18px; padding-right:40px; }
+  .wp-theme-toggle{ width:38px; height:38px; }
+  .wp-section{ margin-top:18px; }
+  .wp-section-body{ gap:14px; }
+
+  /* Prevent iOS auto-zoom on focus: inputs need >=16px font-size */
+  .wp-input, .wp-select{ font-size:16px; }
+  .wp-val-input{ font-size:13px; padding:6px 6px; }
+
+  /* Bigger touch targets */
+  .wp-seg-b{ padding:11px 8px; min-height:40px; }
+  .wp-toggle{ padding:6px 12px; font-size:11px; }
+  .wp-chip{ width:34px; height:34px; }
+  .wp-swatch{ width:32px; height:32px; }
+  .wp-box{ width:19px; height:19px; }
+  .wp-check{ font-size:13px; gap:11px; }
+  .wp-preset-del{ width:34px; height:34px; }
+
+  .wp-btn{ padding:14px 12px; min-height:46px; font-size:13.5px; }
+  .wp-actions{ gap:8px; }
+  .wp-namegen-btn{ padding:12px 16px; }
+  .wp-preset-save-btn{ padding:12px 14px; }
+
+  .wp-canvas-wrap{ border-radius:8px; }
+  .wp-meta{ font-size:10px; letter-spacing:.14em; }
+}
 `;
