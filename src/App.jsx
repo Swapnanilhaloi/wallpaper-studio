@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Download, RotateCcw, Shuffle, Dices } from "lucide-react";
+import { Download, RotateCcw, Shuffle, Dices, Sun, Moon } from "lucide-react";
 
 const RES = {
   "4K": [3840, 2160],
@@ -135,18 +135,15 @@ const WEIGHTS = [
 ];
 
 const FONT_FAMILIES = [
-  { name: "Sans", v: "sans" },
-  { name: "Serif · Mincho", v: "serif" },
-];
-
-const SUB_LATIN_FONTS = [
-  { name: "Match", v: "match" },
-  { name: "Sans", v: "Noto Sans" },
-  { name: "Serif", v: "Noto Serif" },
+  { name: "Sans", v: "sans", cjk: "Noto Sans SC", lat: "Noto Sans" },
+  { name: "Serif · Mincho", v: "serif", cjk: "Noto Serif SC", lat: "Noto Serif" },
+  { name: "Mono", v: "mono", cjk: "Noto Sans SC", lat: "Noto Sans Mono" },
+  { name: "Rounded", v: "rounded", cjk: "M PLUS Rounded 1c", lat: "Quicksand" },
+  { name: "Elegant", v: "elegant", cjk: "Noto Serif SC", lat: "Cormorant Garamond" },
+  { name: "Condensed", v: "condensed", cjk: "Noto Sans SC", lat: "Oswald" },
 ];
 
 const BG_TYPES = ["solid", "linear", "radial"];
-const ALIGNS = ["left", "center", "right"];
 
 const DEFAULTS = {
   mainText: "静寂",
@@ -165,14 +162,13 @@ const DEFAULTS = {
   subTrack: 0.35,
   subFrac: 0.5,
   vPos: 0.46,
+  hPos: 0.5,
   vignette: false,
   fontFamily: "sans",
-  subLatinFont: "match",
   titleOpacity: 1,
   glow: false,
   glowBlur: 18,
   glowIntensity: 0.4,
-  align: "center",
   accentLine: false,
   accentLineWidth: 1,
   accentLineLength: 0.15,
@@ -341,11 +337,11 @@ function renderCanvas(ctx, W, H, s) {
   ctx.fillRect(0, 0, W, H);
 
   // Font families
-  const cjkFam = s.fontFamily === "serif" ? "Noto Serif SC" : "Noto Sans SC";
-  const latFam = s.fontFamily === "serif" ? "Noto Serif" : "Noto Sans";
+  const fam = FONT_FAMILIES.find((f) => f.v === s.fontFamily) || FONT_FAMILIES[0];
+  const cjkFam = fam.cjk;
+  const latFam = fam.lat;
   const mainFam = `"${cjkFam}", "${latFam}", sans-serif`;
-  const resolvedSubLat = s.subLatinFont === "match" ? latFam : s.subLatinFont;
-  const subFam = `"${resolvedSubLat}", "${cjkFam}", sans-serif`;
+  const subFam = `"${latFam}", "${cjkFam}", sans-serif`;
 
   // Sizes & positions
   const mainPx = (s.titlePct / 100) * H;
@@ -365,10 +361,7 @@ function renderCanvas(ctx, W, H, s) {
     const widths = chars.map((c) => ctx.measureText(c).width);
     const total = widths.reduce((a, b) => a + b, 0) + tr * Math.max(0, chars.length - 1);
     const margin = W * 0.08;
-    let x =
-      s.align === "left" ? margin
-      : s.align === "right" ? W - margin - total
-      : W / 2 - total / 2;
+    let x = margin + s.hPos * Math.max(0, W - margin * 2 - total);
     const startX = x;
     chars.forEach((c, i) => { ctx.fillText(c, x, y); x += widths[i] + tr; });
     return { startX, total };
@@ -395,10 +388,7 @@ function renderCanvas(ctx, W, H, s) {
   if (s.accentLine) {
     const lineLen = s.accentLineLength * W;
     const margin = W * 0.08;
-    const lineX =
-      s.align === "left" ? margin
-      : s.align === "right" ? W - margin - lineLen
-      : W / 2 - lineLen / 2;
+    const lineX = margin + s.hPos * Math.max(0, W - margin * 2 - lineLen);
     const lineY = mainY + mainPx * 0.64 + subPx * 0.2;
     ctx.beginPath();
     ctx.moveTo(lineX, lineY);
@@ -443,8 +433,20 @@ export default function WallpaperStudio() {
   const [presetName, setPresetName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [batching, setBatching] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("wp-theme") || "dark";
+    } catch {
+      return "dark";
+    }
+  });
   const canvasRef = useRef(null);
   const set = (k) => (v) => setS((p) => ({ ...p, [k]: v }));
+
+  useEffect(() => {
+    try { localStorage.setItem("wp-theme", theme); } catch {}
+  }, [theme]);
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   // Load CJK + latin fonts (both Sans and Serif)
   useEffect(() => {
@@ -454,15 +456,24 @@ export default function WallpaperStudio() {
       link.id = id;
       link.rel = "stylesheet";
       link.href =
-        "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100;300;400;500;600;700&family=Noto+Serif+SC:wght@100;300;400;500;600;700&family=Noto+Sans:wght@100;300;400;500;600;700&family=Noto+Serif:wght@100;300;400;500;600;700&display=swap";
+        "https://fonts.googleapis.com/css2?" +
+        "family=Noto+Sans+SC:wght@100;300;400;500;600;700" +
+        "&family=Noto+Serif+SC:wght@100;300;400;500;600;700" +
+        "&family=Noto+Sans:wght@100;300;400;500;600;700" +
+        "&family=Noto+Serif:wght@100;300;400;500;600;700" +
+        "&family=Noto+Sans+Mono:wght@100;300;400;500;600;700" +
+        "&family=M+PLUS+Rounded+1c:wght@100;300;400;500;700;800" +
+        "&family=Quicksand:wght@300;400;500;600;700" +
+        "&family=Cormorant+Garamond:wght@300;400;500;600;700" +
+        "&family=Oswald:wght@200;300;400;500;600;700" +
+        "&display=swap";
       document.head.appendChild(link);
     }
-    const want = [100, 300, 400, 500, 600, 700].flatMap((w) => [
-      `${w} 100px "Noto Sans SC"`,
-      `${w} 100px "Noto Serif SC"`,
-      `${w} 100px "Noto Sans"`,
-      `${w} 100px "Noto Serif"`,
-    ]);
+    const cjkFonts = ["Noto Sans SC", "Noto Serif SC", "M PLUS Rounded 1c"];
+    const latFonts = ["Noto Sans", "Noto Serif", "Noto Sans Mono", "Quicksand", "Cormorant Garamond", "Oswald"];
+    const want = [100, 300, 400, 500, 600, 700].flatMap((w) =>
+      [...cjkFonts, ...latFonts].map((f) => `${w} 100px "${f}"`)
+    );
     Promise.all(want.map((f) => document.fonts.load(f).catch(() => {})))
       .then(() => document.fonts.ready)
       .then(() => setFontsReady(true))
@@ -578,9 +589,9 @@ export default function WallpaperStudio() {
       subTrack: rnd(0.1, 0.6),
       subFrac: rnd(0.3, 0.65),
       vPos: rnd(0.3, 0.6),
+      hPos: rnd(0, 1),
       vignette: Math.random() > 0.6,
       fontFamily: Math.random() > 0.5 ? "sans" : "serif",
-      align: ["left", "center", "right"][Math.floor(Math.random() * 3)],
       titleOpacity: rnd(0.7, 1),
       bgType: Math.random() > 0.65 ? "linear" : "solid",
       gradAngle: Math.floor(rnd(0, 360)),
@@ -590,13 +601,17 @@ export default function WallpaperStudio() {
   const [pw, ph] = RES[s.resKey];
 
   return (
-    <div className="wp-root">
+    <div className="wp-root" data-theme={theme}>
       <style>{css}</style>
 
       <div className="wp-shell">
         {/* CONTROLS */}
         <aside className="wp-panel">
           <header className="wp-head">
+            <button className="wp-theme-toggle" onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
             <div className="wp-eyebrow">壁 紙 ・ studio</div>
             <h1 className="wp-title">Wallpaper Studio</h1>
             <p className="wp-sub">Minimal title-card wallpapers. Type something, tune it, export.</p>
@@ -635,19 +650,11 @@ export default function WallpaperStudio() {
               <input className="wp-input" value={s.subText} disabled={!s.showSub}
                 onChange={(e) => set("subText")(e.target.value)} placeholder="seijaku · stillness" />
             </Field>
-            <Field label="Font family">
+            <Field label="Font style">
               <div className="wp-seg">
                 {FONT_FAMILIES.map((f) => (
                   <button key={f.v} className={`wp-seg-b ${s.fontFamily === f.v ? "on" : ""}`}
                     onClick={() => set("fontFamily")(f.v)}>{f.name}</button>
-                ))}
-              </div>
-            </Field>
-            <Field label="Subline latin">
-              <div className="wp-seg">
-                {SUB_LATIN_FONTS.map((f) => (
-                  <button key={f.v} className={`wp-seg-b ${s.subLatinFont === f.v ? "on" : ""}`}
-                    onClick={() => set("subLatinFont")(f.v)}>{f.name}</button>
                 ))}
               </div>
             </Field>
@@ -811,14 +818,8 @@ export default function WallpaperStudio() {
           <Section label="Position">
             <Slider label="Vertical" v={s.vPos} min={0.2} max={0.8} step={0.005}
               onChange={set("vPos")} />
-            <Field label="Horizontal">
-              <div className="wp-seg">
-                {ALIGNS.map((a) => (
-                  <button key={a} className={`wp-seg-b ${s.align === a ? "on" : ""}`}
-                    onClick={() => set("align")(a)}>{a}</button>
-                ))}
-              </div>
-            </Field>
+            <Slider label="Horizontal" v={s.hPos} min={0} max={1} step={0.005}
+              onChange={set("hPos")} />
           </Section>
 
           {/* LAYOUT */}
@@ -986,6 +987,34 @@ const css = `
   font-family:"Noto Sans",system-ui,sans-serif;
   background:var(--bg); color:var(--txt);
   height:100dvh; width:100%; overflow:hidden;
+  transition:background .2s ease, color .2s ease;
+}
+.wp-root[data-theme="light"]{
+  --bg:#f4f1ea; --panel:#ffffff; --panel2:#f0ece3; --line:#ddd6c8;
+  --txt:#242019; --dim:#5d574a; --faint:#8a8371; --accent:#8a5f30;
+  font-weight:400;
+}
+.wp-root[data-theme="light"] .wp-stage{
+  background: radial-gradient(120% 120% at 50% 35%, #ffffff 0%, var(--bg) 70%);
+}
+.wp-root[data-theme="light"] .wp-seg-b.on,
+.wp-root[data-theme="light"] .wp-btn.primary{
+  color:#fff;
+}
+.wp-root .wp-title,
+.wp-root .wp-eyebrow,
+.wp-root .wp-sub,
+.wp-root .wp-field-label,
+.wp-root .wp-section-label,
+.wp-root .wp-input,
+.wp-root .wp-select,
+.wp-root .wp-seg-b,
+.wp-root .wp-check,
+.wp-root .wp-btn,
+.wp-root .wp-toggle,
+.wp-root .wp-preset-name,
+.wp-root .wp-meta{
+  font-weight:500;
 }
 .wp-root *{box-sizing:border-box;}
 .wp-shell{display:flex; height:100%;}
@@ -1004,7 +1033,14 @@ const css = `
 .wp-panel::-webkit-scrollbar-thumb:hover{ background:var(--dim); }
 @media (max-width:880px){ .wp-panel{width:100%; height:auto; border-right:none; border-bottom:1px solid var(--line);} }
 
-.wp-head{margin-bottom:22px;}
+.wp-head{margin-bottom:22px; position:relative;}
+.wp-theme-toggle{
+  position:absolute; top:0; right:0; width:30px; height:30px; border-radius:50%;
+  background:var(--panel2); border:1px solid var(--line); color:var(--dim);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  transition:all .15s;
+}
+.wp-theme-toggle:hover{color:var(--accent); border-color:var(--accent);}
 .wp-eyebrow{font-size:11px; letter-spacing:.42em; color:var(--accent); font-weight:300; text-transform:lowercase; margin-bottom:12px;}
 .wp-title{font-size:21px; font-weight:200; letter-spacing:.04em; margin:0 0 6px;}
 .wp-sub{font-size:12.5px; line-height:1.5; color:var(--dim); margin:0; font-weight:300;}
